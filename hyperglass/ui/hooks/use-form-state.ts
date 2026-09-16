@@ -166,7 +166,7 @@ const formState: StateCreator<FormStateType> = (set, get) => ({
       .map(device => device.directives);
 
     // Get directive objects that are common between selected locations.
-    const intersectingDirectives = intersectionWith(...allDirectives, isEqual);
+    const intersectingDirectives = intersectionWith(...allDirectives, (a, b) => a.name === b.name);
 
     // Deduplicate all intersecting directives by ID.
     const directives = dedupObjectArray(intersectingDirectives, 'id');

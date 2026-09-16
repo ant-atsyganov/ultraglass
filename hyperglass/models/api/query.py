@@ -64,7 +64,15 @@ class Query(BaseModel):
         query_directives = self.device.directives.matching(self.query_type)
 
         if len(query_directives) < 1:
-            raise QueryTypeNotFound(query_type=self.query_type)
+            _fallback_name = self._resolve_directive_name(self.query_type)
+            if _fallback_name:
+                query_directives = [
+                    d
+                    for d in self.device.directives
+                    if getattr(d, "name", None) == _fallback_name
+                ]
+            if len(query_directives) < 1:
+                raise QueryTypeNotFound(query_type=self.query_type)
 
         self.directive = query_directives[0]
 
@@ -77,6 +85,14 @@ class Query(BaseModel):
             raise InputInvalid(**err.kwargs) from err
 
         self.query_target = self.transform_query_target()
+
+    def _resolve_directive_name(self, directive_id: str) -> t.Optional[str]:
+        """Resolve a vendor-specific directive id to its shared name."""
+        for device in self._state.devices:
+            for d in device.directives:
+                if getattr(d, "id", None) == directive_id:
+                    return getattr(d, "name", None)
+        return None
 
     def summary(self) -> SimpleQuery:
         """Summarized and post-validated model of a Query."""
