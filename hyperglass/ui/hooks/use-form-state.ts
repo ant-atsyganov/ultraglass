@@ -169,7 +169,10 @@ const formState: StateCreator<FormStateType> = (set, get) => ({
     // directives are vendor-specific by `id` but share a `name` across platforms, so
     // deep equality would intersect a multi-vendor selection to nothing. The backend
     // resolves the resulting id back to each device's own directive by that name.
-    const intersectingDirectives = intersectionWith(...allDirectives, (a, b) => a.name === b.name);
+    const intersectingDirectives = intersectionWith(
+      ...allDirectives,
+      (a: Directive, b: Directive) => a.name === b.name,
+    );
 
     // Deduplicate all intersecting directives by ID.
     const directives = dedupObjectArray(intersectingDirectives, 'id');
